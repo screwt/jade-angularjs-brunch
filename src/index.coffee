@@ -132,10 +132,11 @@ module.exports = class JadeAngularJsCompiler
 
     content = ""
 
+    self = this
     _.each modules, (module) ->
       moduleContent = buildModule module
 
-      if @singleFile
+      if self.singleFile
         content += "\n#{moduleContent}"
       else
         writer = fileWriter module.filename
