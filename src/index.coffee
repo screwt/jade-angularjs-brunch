@@ -172,7 +172,7 @@ module.exports = class JadeAngularJsCompiler
     @writeStatic assets
 
     @writeModules _.chain(preResult)
-      ?.difference(assets)
+      .difference(assets)
       .each((v) => @attachModuleNameToTemplate v, assetsTree)
       .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
       .groupBy((v) -> v.module)
