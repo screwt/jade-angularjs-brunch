@@ -25,8 +25,25 @@ module.exports = class JadeAngularJsCompiler
     @locals = config.plugins?.jade_angular?.locals or {}
     @staticMask = config.plugins?.jade_angular?.static_mask or /index.jade/
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths?.jadeCompileTrigger or 'js/dontUseMe')
-    @singleFile = !!config.plugins?.jade_angular?.single_file
+    @singleFile = !!config?.plugins?.jade_angular?.single_file
     @singleFileName = sysPath.join @public, (config?.plugins?.jade_angular?.single_file_name or "js/angular_templates.js")
+
+  # Do nothing, just check possibility of Jade compilation
+  compile: (data, path, callback) ->
+    try
+      content = jade.compile data, 
+        compileDebug: no,
+        client: no,
+        filename: path,
+        doctype: @doctype
+        pretty: @pretty
+
+      content @locals
+    catch err
+
+      error = err
+    finally
+      callback error, ""
 
   preparePairStatic: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
@@ -62,7 +79,7 @@ module.exports = class JadeAngularJsCompiler
     path = @removeFileNameFromPath pair.path
 
     if assetsTree.length is 0
-      pair.module = "#{path[0]}.templates"
+      pair.module ="#{path[0]}.templates"
       return
 
     findedPath = []
@@ -115,12 +132,10 @@ module.exports = class JadeAngularJsCompiler
 
     content = ""
 
-    self = this
-
-    _.each modules, (module) =>
+    _.each modules, (module) ->
       moduleContent = buildModule module
 
-      if self.singleFile
+      if @singleFile
         content += "\n#{moduleContent}"
       else
         writer = fileWriter module.filename
@@ -149,9 +164,6 @@ module.exports = class JadeAngularJsCompiler
 
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
-
-    # Need to stop processing if there's nothing to process
-    return if preResult.length is 0
 
     assets = _.filter preResult, (v) => @staticMask.test v.path
     assetsTree = @parsePairsIntoAssetsTree assets
