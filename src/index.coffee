@@ -8,7 +8,7 @@ fileWriter = (newFilePath) -> (err, content) ->
   throw err if err?
   return if not content?
   dirname = sysPath.dirname newFilePath
-  mkdirp dirname, '0775', (err) ->
+  mkdirp dirname, '0775', (err) -> 
     throw err if err?
     fs.writeFile newFilePath, content, (err) -> throw err if err?
 
